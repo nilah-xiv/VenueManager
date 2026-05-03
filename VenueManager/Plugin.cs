@@ -192,10 +192,10 @@ namespace VenueManager
     public void ToggleConfigUI() => MainWindow.Toggle();
     public void ToggleMainUI() => MainWindow.Toggle();
 
-    private unsafe void OnTerritoryChanged(ushort territory)
+    private unsafe void OnTerritoryChanged(uint territory)
     {
       // Save current user territory 
-      pluginState.territory = territory;
+      pluginState.territory = (ushort)territory;
 
       // Reset tracking outside 
       pluginState.isTrackingOutside = false;
@@ -270,7 +270,7 @@ namespace VenueManager
             try
             {
               var housingManager = HousingManager.Instance();
-              var worldId = ClientState.LocalPlayer?.CurrentWorld.Value.RowId;
+              var worldId = Objects.LocalPlayer?.CurrentWorld.Value.RowId;
               // If the user has transitioned into a new house. Store that house information. Ensure we have a world to set it to 
               if (pluginState.currentHouse.houseId != (long)housingManager->GetCurrentIndoorHouseId().Id && worldId != null)
               {
@@ -330,10 +330,10 @@ namespace VenueManager
               seenPlayers.Add(player.Name, true);
 
             // Is the new player the current user 
-            var isSelf = ClientState.LocalPlayer?.Name.TextValue == player.Name;
+            var isSelf = Objects.LocalPlayer?.Name.TextValue == player.Name;
 
             // Store Player name 
-            if (ClientState.LocalPlayer?.Name.TextValue.Length > 0) pluginState.playerName = ClientState.LocalPlayer?.Name.TextValue ?? "";
+            if (Objects.LocalPlayer?.Name.TextValue.Length > 0) pluginState.playerName = Objects.LocalPlayer?.Name.TextValue ?? "";
 
             // New Player has entered the house 
             if (!getCurrentGuestList().guests.ContainsKey(player.Name))
@@ -539,7 +539,7 @@ namespace VenueManager
       // Don't show alerts if snoozed 
       if (pluginState.snoozed) return;
 
-      var isSelf = ClientState.LocalPlayer?.Name.TextValue == player.Name;
+      var isSelf = Objects.LocalPlayer?.Name.TextValue == player.Name;
       if (isSelf) return;
       // Don't show leave alerts if user just entered the building
       if (justEnteredHouse) return;
