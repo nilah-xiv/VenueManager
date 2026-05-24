@@ -14,8 +14,6 @@ using Dalamud.Memory;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using Map = Lumina.Excel.Sheets.Map;
 
 namespace VenueManager.Tabs;
 
@@ -235,23 +233,22 @@ public class SettingsTab
   
     try {
       var housingManager = HousingManager.Instance();
+      var originalType = (ushort)HousingManager.GetOriginalHouseTerritoryTypeId();
+      var originalDistrict = TerritoryUtils.getHouseDistrict(originalType);
 
-      var mapData = Plugin.DataManager.GetExcelSheet<Map>().GetRow(AgentMap.Instance()->SelectedMapId);
-      string[] parts = mapData.PlaceName.Value.Name.ExtractText().Split(" - ");
-      string district = parts.Length == 2 ? parts[1] : "";
-
-    ImGui.Text($@"Debug Info
+      ImGui.Text($@"Debug Info
 
 Territory Id: {plugin.pluginState.territory}
 In House: {plugin.pluginState.userInHouse}
 
+HousingManager
 HouseID: {housingManager->GetCurrentIndoorHouseId()}
 Plot: {housingManager->GetCurrentPlot() + 1}
 Ward: {housingManager->GetCurrentWard() + 1}
 Room: {housingManager->GetCurrentRoom()}
 Division: {housingManager->GetCurrentDivision()}
-District: {district}
-PlaceName: {mapData.PlaceName.Value.Name.ExtractText()}
+OriginalHouseTerritoryTypeId: {originalType}
+Original District: {originalDistrict}
 ");
     } catch {
 
