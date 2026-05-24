@@ -271,18 +271,41 @@ namespace VenueManager
             {
               var housingManager = HousingManager.Instance();
               var worldId = Objects.LocalPlayer?.CurrentWorld.Value.RowId;
-              // If the user has transitioned into a new house. Store that house information. Ensure we have a world to set it to 
-              if (pluginState.currentHouse.houseId != (long)housingManager->GetCurrentIndoorHouseId().Id && worldId != null)
+              var currentHouseId = (long)housingManager->GetCurrentIndoorHouseId().Id;
+              var currentPlot = housingManager->GetCurrentPlot() + 1; // Game stores plot as -1
+              var currentWard = housingManager->GetCurrentWard() + 1; // Game stores ward as -1
+              var currentRoom = housingManager->GetCurrentRoom();
+              var currentType = (ushort)HousingManager.GetOriginalHouseTerritoryTypeId();
+              var currentDistrict = TerritoryUtils.getHouseDistrict(currentType);
+
+              // Keep address fields in sync even when house id is unchanged (e.g. moving between districts).
+              var venueChanged = pluginState.currentHouse.houseId != currentHouseId
+                || pluginState.currentHouse.plot != currentPlot
+                || pluginState.currentHouse.ward != currentWard
+                || pluginState.currentHouse.room != currentRoom
+                || pluginState.currentHouse.type != currentType
+                || pluginState.currentHouse.district != currentDistrict
+                || (worldId != null && pluginState.currentHouse.worldId != worldId.Value);
+
+              // If the user has transitioned into a new venue state, store that house information.
+              if (venueChanged)
               {
-                pluginState.currentHouse.houseId = (long)housingManager->GetCurrentIndoorHouseId().Id;
-                pluginState.currentHouse.plot = housingManager->GetCurrentPlot() + 1; // Game stores plot as -1 
-                pluginState.currentHouse.ward = housingManager->GetCurrentWard() + 1; // Game stores ward as -1 
-                pluginState.currentHouse.room = housingManager->GetCurrentRoom();
-                pluginState.currentHouse.type = (ushort)HousingManager.GetOriginalHouseTerritoryTypeId();
-                pluginState.currentHouse.district = TerritoryUtils.getDistrict((long)housingManager->GetCurrentIndoorHouseId().Id);
+                var previousHouseId = pluginState.currentHouse.houseId;
+
+                pluginState.currentHouse.houseId = currentHouseId;
+                pluginState.currentHouse.plot = currentPlot;
+                pluginState.currentHouse.ward = currentWard;
+                pluginState.currentHouse.room = currentRoom;
+                pluginState.currentHouse.type = currentType;
+                pluginState.currentHouse.district = currentDistrict;
+                if (worldId != null)
+                {
+                  pluginState.currentHouse.worldId = worldId.Value;
+                }
 
                 // Load current guest list from disk if player has entered a saved venue 
-                if (venueList.venues.ContainsKey(pluginState.currentHouse.houseId))
+                if (previousHouseId != pluginState.currentHouse.houseId
+                    && venueList.venues.ContainsKey(pluginState.currentHouse.houseId))
                 {
                   var venue = venueList.venues[pluginState.currentHouse.houseId];
                   GuestList venueGuestList = new GuestList(venue.houseId, venue);
